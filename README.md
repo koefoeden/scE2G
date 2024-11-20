@@ -14,7 +14,7 @@ The pipeline consists of the following components:
 6. Apply trained model to make predictions by assigning a score to each E-G pair
 
 ## Set up
-Clone the repo and set it up for submdoule usage
+Clone the repo and set it up for submodule usage
 ```
 git clone --recurse-submodules https://github.com/EngreitzLab/scE2G.git
 git config --global submodule.recurse true
