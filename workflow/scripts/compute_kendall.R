@@ -125,7 +125,7 @@ rm(matrix.atac_count)
 
 # Load scRNA matrix
 if (file_ext(rna_matrix_path) == "h5ad") {
-  matrix.rna_count <- t(read_h5ad(rna_matix_path)$X)
+  matrix.rna_count <- t(read_h5ad(rna_matrix_path)$X)
 } else {
   matrix.rna_count = read.csv(rna_matrix_path,
                               row.names = 1,
