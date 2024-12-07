@@ -12,6 +12,7 @@ suppressPackageStartupMessages({
   library(Matrix)
   library(anndata)
   library(tools)
+  library(dplyr)
 })
 
 ## Define functions --------------------------------------------------------------------------------
@@ -124,7 +125,7 @@ matrix.atac = BinarizeCounts(matrix.atac_count)
 rm(matrix.atac_count)
 
 # Load scRNA matrix
-if (file_ext(rna_matrix_path) == "h5ad") {
+if (file_ext(rna_matrix_path) %in% c("h5ad", "h5")) {
   matrix.rna_count <- t(read_h5ad(rna_matrix_path)$X)
 } else {
   matrix.rna_count = read.csv(rna_matrix_path,
