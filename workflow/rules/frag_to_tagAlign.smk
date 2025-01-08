@@ -72,7 +72,7 @@ rule frag_to_norm_bigWig:
 		"""
 			LC_ALL=C
 			frag_count=$(zcat {input.frag_file} | awk '$1 !~ /_/' | wc -l)
-			scale_factor=$(echo "$frag_count / 1000000" | bc)
+			scale_factor=$(echo "1000000 / $frag_count" | bc -l)
 
 			# remove alt chromosomes
 			zcat {input.frag_file} | awk '$1 !~ /_/' | \
