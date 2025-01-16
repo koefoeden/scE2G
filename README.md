@@ -1,6 +1,8 @@
 # scE2G
 This project is licensed under the terms of the MIT license.
 
+The preprint describing scE2G is available [here](https://www.biorxiv.org/content/10.1101/2024.11.23.624931v1).
+
 Input: Single-cell ATAC-seq or paired ATAC and RNA-seq (mulitome) data per cell cluster
 
 Output: Genomewide enhancer-gene regulatory link predictions per cell cluster
@@ -20,14 +22,15 @@ git clone --recurse-submodules https://github.com/EngreitzLab/scE2G.git
 git config --global submodule.recurse true
 ```
 
-When running for the first time, the conda environments have to be setup.
-For speed, it's recommended that your current environment has mamba installed
+When running for the first time, the conda environments have to be setup. 
+We highly recommend using the environment specified in `workflow/envs/run_snakemake.yml`, which specifies the exact package versions compatible with the pipeline.
+For speed, we include mamba in this recommended environment.
 
 ```
 conda config --set channel_priority flexible  # Make sure your conda config uses flexible channel packaging to prevent unsatisfiable errors
-conda create -n mamba -c conda-forge mamba=1.5.11 "python<=3.11"
-conda activate mamba
-mamba install -c conda-forge -c bioconda snakemake=7
+conda env create -f workflow/envs/run_snakemake.yml
+conda activate run_snakemake
+
 ```
 
 ## Apply model
