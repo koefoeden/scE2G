@@ -39,18 +39,21 @@ Required input data includes (refer to the example data in the `resources/exampl
 1. Pseudobulk fragment files and their corresponding *.tbi index files in the same directory for each cell cluster
 	- Must be sorted by coordinates and gzipped. If it is not sorted, you can use the sortBed tool from bedtools: `sortBed atac_fragments.unsorted.tsv > atac_fragments.tsv`.
 	- Must have 5 columns (no header) corresponding to chr, start, end, cell_name, read_count (usually just 1)
-	- The cell_name column should correspond to the cell names in the RNA count matrix. All cells in the RNA matrix must be represented in the fragment file. 
+	- The cell_name column should correspond to the cell names in the RNA count matrix. All cells in the RNA matrix must be represented in the fragment file and vice versa.
 	- To create a .tbi index, use `bgzip` from [HTSlib](https://github.com/samtools/htslib) instead of gzip to compress the fragment file: `bgzip atac_fragments.tsv`, then generate the corresponding .tbi index file using `tabix -p bed atac_fragments.tsv.gz`.
 2. For scE2G (Multiome): RNA count matrix (gene x cell) for each cell cluster
 	- Use unnormalized (raw) counts
-	- Must be in either .csv.gz or .h5ad format
 	- Ensure there are not duplicated gene names
+	- Accepted formats for RNA matrix:
+			1. .csv.gz format
+			2. .h5ad or .h5 format
+			3. Directory with sparse matrix files from 10X (matrix.mtx, genes.tsv or features.tsv, and barcodes.tsv). Note that files are read with the argument `gene.column = 1`. 
 
 To configure the pipeline:
 - Modify `config/config.yaml` to specify paths for results_dir.
-- Modify `config/config_cell_clusters.tsv` to specify the RNA matrix path, fragment file path, Hi-C file path, Hi-C data type, Hi-C resolution, TSS coordinates, and gene coordinates for each cell cluster. If running scE2G (ATAC), leave the RNA matrix path blank.
+- Modify `config/config_cell_clusters.tsv` to specify the cluster name, ATAC fragment file path, and RNA matrix path. Leave the remaining columns empty.
+- If running scE2G (ATAC), also leave the RNA matrix path empty, but still include the column.
 - Specify model directory from those in `models/` to be applied
-
 
 
 Running the pipeline:
