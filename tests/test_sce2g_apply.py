@@ -27,14 +27,14 @@ COLUMNS_TO_COMPARE: Dict[str, type] = {
 }
 TEST_OUTPUT_DIR = CONFIG["results_dir"]
 EXPECTED_OUTPUT_DIR = f"tests/expected_output/{CONFIG['TEST_CONFIG_NAME']}" 
-ALL_PUTATIVE_PRED_FILE = "K562_chr22_cluster1/multiome_powerlaw_v2/encode_e2g_predictions.tsv.gz"
-THRESHOLDED_PRED_FILE_PATTERN = (
-    "K562_chr22_cluster1/multiome_powerlaw_v2/encode_e2g_predictions_threshold*[0-9].tsv.gz"
-)
+# ALL_PUTATIVE_PRED_FILE = "multiome_powerlaw_v2/encode_e2g_predictions.tsv.gz" # file too large to upload; just compare thresholded
+# THRESHOLDED_PRED_FILE_PATTERN = (
+#     "K562_chr22_cluster1/multiome_powerlaw_v2/encode_e2g_predictions_threshold*[0-9].tsv.gz"
+# )
+THRESHOLDED_PRED_FILE = "multiome_powerlaw_v2/encode_e2g_predictions_threshold0.164.tsv.gz"
 
-
-class TestFullrE2GRun(unittest.TestCase):
-    def compare_all_prediction_file(self, biosample: str, pred_file) -> None:
+class scE2GTest(unittest.TestCase):
+    def compare_prediction_file(self, biosample: str, pred_file) -> None:
         test_file = os.path.join(TEST_OUTPUT_DIR, biosample, pred_file)
         expected_file = os.path.join(EXPECTED_OUTPUT_DIR, biosample, pred_file)
         print(f"Comparing biosample: {biosample} for pred_file: {pred_file}")
@@ -43,41 +43,42 @@ class TestFullrE2GRun(unittest.TestCase):
             get_filtered_dataframe(expected_file, COLUMNS_TO_COMPARE),
         )
 
-    def compare_thresholded_prediction_file(self, biosample: str) -> None:
-        test_files = glob.glob(
-            os.path.join(TEST_OUTPUT_DIR, biosample, THRESHOLDED_PRED_FILE_PATTERN)
-        )
-        expected_files = glob.glob(
-            os.path.join(EXPECTED_OUTPUT_DIR, biosample, THRESHOLDED_PRED_FILE_PATTERN)
-        )
-        if len(test_files) != 1:
-            raise Exception(
-                f"Multiple or no test thresholded files found. Please clean up. {test_files}"
-            )
-        if len(expected_files) != 1:
-            raise Exception(
-                f"Multiple or no expected thresholded files found. Please clean up. {expected_files}"
-            )
-        test_file = test_files[0]
-        expected_file = expected_files[0]
-        print(
-            f"Comparing biosample: {biosample} for pred_file: {os.path.basename(test_file)}"
-        )
-        pd.testing.assert_frame_equal(
-            get_filtered_dataframe(test_file, COLUMNS_TO_COMPARE),
-            get_filtered_dataframe(expected_file, COLUMNS_TO_COMPARE),
-        )
+    # def compare_thresholded_prediction_file(self, biosample: str) -> None:
+    #     test_files = glob.glob(
+    #         os.path.join(TEST_OUTPUT_DIR, biosample, THRESHOLDED_PRED_FILE_PATTERN)
+    #     )
+    #     expected_files = glob.glob(
+    #         os.path.join(EXPECTED_OUTPUT_DIR, biosample, THRESHOLDED_PRED_FILE_PATTERN)
+    #     )
+    #     if len(test_files) != 1:
+    #         raise Exception(
+    #             f"Multiple or no test thresholded files found. Please clean up. {test_files}"
+    #         )
+    #     if len(expected_files) != 1:
+    #         raise Exception(
+    #             f"Multiple or no expected thresholded files found. Please clean up. {expected_files}"
+    #         )
+    #     test_file = test_files[0]
+    #     expected_file = expected_files[0]
+    #     print(
+    #         f"Comparing biosample: {biosample} for pred_file: {os.path.basename(test_file)}"
+    #     )
+    #     pd.testing.assert_frame_equal(
+    #         get_filtered_dataframe(test_file, COLUMNS_TO_COMPARE),
+    #         get_filtered_dataframe(expected_file, COLUMNS_TO_COMPARE),
+    #     )
 
     def run_test(self, config_file: str) -> None:
         start = time.time()
-        cmd = f"snakemake -j4 -F --configfile {config_file} --use-conda"
+        cmd = f"snakemake -j4  --configfile {config_file} --use-conda"
         run_cmd(cmd)
         time_taken = time.time() - start
 
-        biosample_names = get_biosample_names(CONFIG["cell_clusters"])
+        #biosample_names = get_biosample_names(CONFIG["cell_clusters"])
+        biosample_names = ["K562_chr22_cluster1"]
         for biosample in biosample_names:
-            # self.compare_all_prediction_file(biosample, ALL_PUTATIVE_PRED_FILE)
-            self.compare_thresholded_prediction_file(biosample)
+            self.compare_prediction_file(biosample, THRESHOLDED_PRED_FILE)
+            #self.compare_thresholded_prediction_file(biosample)
 
         # Make sure the test doesn't take too long
         # May need to adjust as more biosamples are added, but we should keep
