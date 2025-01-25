@@ -45,9 +45,9 @@ Required input data includes (refer to the example data in the `resources/exampl
 	- Use unnormalized (raw) counts
 	- Ensure there are not duplicated gene names
 	- Accepted formats for RNA matrix:
-			1. .csv.gz format
-			2. .h5ad or .h5 format
-			3. Directory with sparse matrix files from 10X (matrix.mtx, genes.tsv or features.tsv, and barcodes.tsv). Note that files are read with the argument `gene.column = 1`. 
+		1. .csv.gz format
+		2. .h5ad or .h5 format
+		3. Directory with sparse matrix files from 10X (matrix.mtx, genes.tsv or features.tsv, and barcodes.tsv). Note that files are read with the argument `gene.column = 1`. 
 
 To configure the pipeline:
 - Modify `config/config.yaml` to specify paths for results_dir.
