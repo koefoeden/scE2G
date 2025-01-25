@@ -9,3 +9,4 @@ dependencies:
   - python<=3.11
   - mamba=1.5.11
   - snakemake=7
+  - pytest-xdist
