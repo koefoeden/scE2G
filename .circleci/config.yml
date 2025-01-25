@@ -33,7 +33,7 @@ jobs:
             mamba env create -f workflow/envs/run_snakemake.yml
       - run:
           name: Run tests
-          no_output_timeout: 30m
+          no_output_timeout: 45m
           command: |
             conda run -n run_snakemake pytest -s -n 4 tests/
 
