@@ -31,7 +31,7 @@ if (file_ext(rna_matrix_path) == "h5ad") {
                         row.names = 1,
                         check.names = F)
 } else if (file.info(rna_matrix_path)$isdir) { # assume sparse matrix format
-	matrix.rna_count = Read10X(rna_matrix_path, gene.column=1)
+	rna_matrix = Read10X(rna_matrix_path, gene.column=1)
 } else {
 	message("Please provide a supported RNA matrix format.")
 }
