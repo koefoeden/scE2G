@@ -7,6 +7,7 @@ suppressPackageStartupMessages({
   library(Signac)
   library(anndata)
   library(tools)
+  library(Seurat)
 })
 
 # Import parameters from Snakemake
@@ -25,10 +26,14 @@ mcols(bed.peaks) = NULL
 # Read the rna matrix to extract cell name
 if (file_ext(rna_matrix_path) == "h5ad") {
   rna_matrix <- t(read_h5ad(rna_matrix_path)$X)
-} else {
+} else if (file_ext(rna_matrix_path) == "gz") {
   rna_matrix = read.csv(rna_matrix_path,
                         row.names = 1,
                         check.names = F)
+} else if (file.info(rna_matrix_path)$isdir) { # assume sparse matrix format
+	rna_matrix = Read10X(rna_matrix_path, gene.column=1)
+} else {
+	message("Please provide a supported RNA matrix format.")
 }
 
 # Create a list to store Signac Fragment object
