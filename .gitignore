@@ -1,5 +1,7 @@
 results/
 results_training/
+config/mine/
+config/archived/
 .snakemake/
 *.dot
 *.png
