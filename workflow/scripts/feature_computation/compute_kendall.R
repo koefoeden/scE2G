@@ -113,6 +113,7 @@ kendall_pairs_path = snakemake@input$kendall_pairs_path
 atac_matrix_path = snakemake@input$atac_matrix
 rna_matrix_path = snakemake@input$rna_matrix
 kendall_predictions_path = snakemake@output$kendall_predictions
+umi_count_path = snakemake@output$umi_count
 
 # Load candidate E-G pairs
 pairs.E2G = readGeneric(kendall_pairs_path,
@@ -139,6 +140,10 @@ if (file_ext(rna_matrix_path) %in% c("h5ad", "h5")) {
 }
 
 matrix.rna_count = matrix.rna_count[,colnames(matrix.atac)]
+
+# write number of UMIs to file
+num_umi = sum(matrix.rna_count)
+write(num_umi, file = umi_count_path)
 
 # Normalize scRNA matrix
 matrix.rna = NormalizeData(matrix.rna_count)
