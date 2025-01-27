@@ -10,7 +10,19 @@ rule frag_to_tagAlign:
 				"{cluster}", 
 				"tagAlign",
 				"tagAlign.sort.gz"
-			)
+			),
+		fragment_count = 
+			temp(os.path.join(
+				RESULTS_DIR,
+				"{cluster}",
+				"fragment_count.txt"
+			)),
+		cell_count = 
+			temp(os.path.join(
+				RESULTS_DIR,
+				"{cluster}",
+				"cell_count.txt"
+			))
 	conda:
 		"../envs/sc_e2g.yml"
 	threads: 8
@@ -24,6 +36,10 @@ rule frag_to_tagAlign:
 		awk -v OFS='\t' '{{mid=int(($2+$3)/2); print $1,$2,mid,"N",1000,"+"; print $1,mid+1,$3,"N",1000,"-"}}' | \
 		sort -k 1,1V -k 2,2n -k3,3n --parallel {threads} | \
 		bgzip -c > {output.tagAlign_sort_file}  
+
+		# get fragment & cell count
+		zcat {input.frag_file} | awk '$1 !~ /_/' | wc -l > {output.fragment_count}
+		zcat {input.frag_file} | awk '$1 !~ /_/' | cut -f4 | sort -u | wc -l > {output.cell_count}
 
 		# Index the tagAlign file
 		tabix -p bed {output.tagAlign_sort_file}
@@ -56,7 +72,8 @@ rule frag_to_bigWig:
 
 rule frag_to_norm_bigWig:
 	input:
-		frag_file = lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "atac_frag_file"]
+		frag_file = lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "atac_frag_file"],
+		fragment_count = os.path.join(RESULTS_DIR, "{cluster}", "fragment_count.txt")
 	params:
 		chrSizes = encode_e2g_config["chr_sizes"]
 	output:
@@ -71,7 +88,7 @@ rule frag_to_norm_bigWig:
 	shell:
 		"""
 			LC_ALL=C
-			frag_count=$(zcat {input.frag_file} | awk '$1 !~ /_/' | wc -l)
+			frag_count=$(<{input.fragment_count})
 			scale_factor=$(echo "1000000 / $frag_count" | bc -l)
 
 			# remove alt chromosomes

@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
   library(data.table)
   library(tidyverse)
   library(GenomicRanges)
-  source(file.path(snakemake@scriptdir, "get_fill_values.R"))
+  source(snakemake@params$fill_value_script)
 })
 
 ## Define functions --------------------------------------------------------------------------------
