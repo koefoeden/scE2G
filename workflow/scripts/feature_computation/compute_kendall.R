@@ -128,11 +128,15 @@ rm(matrix.atac_count)
 # Load scRNA matrix
 if (file_ext(rna_matrix_path) %in% c("h5ad", "h5")) {
   matrix.rna_count <- t(read_h5ad(rna_matrix_path)$X)
-} else {
+} else if (file_ext(rna_matrix_path) == "gz") {
   matrix.rna_count = read.csv(rna_matrix_path,
                               row.names = 1,
                               check.names = F)
   matrix.rna_count = Matrix(as.matrix(matrix.rna_count), sparse = TRUE)
+} else if (file.info(rna_matrix_path)$isdir) { # assume sparse matrix format
+	matrix.rna_count = Read10X(rna_matrix_path, gene.column=1)
+} else {
+	message("Please provide a supported RNA matrix format.")
 }
 
 matrix.rna_count = matrix.rna_count[,colnames(matrix.atac)]
