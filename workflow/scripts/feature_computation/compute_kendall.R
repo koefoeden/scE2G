@@ -106,12 +106,52 @@ kendall_mutliple_genes = function(bed.E2G,
                             }
   return(bed.E2G.output)
 }
+
+# helper function to parse GTF
+extract_attributes <- function(gtf_attributes, att_of_interest){
+  att <- unlist(strsplit(gtf_attributes, " "))
+  if(att_of_interest %in% att){
+    return(gsub("\"|;","", att[which(att %in% att_of_interest)+1]))
+  } else {
+    return(NA)}
+}
+
+# map gene names from RNA count matrix to gene reference used by scE2G via Ensembl ID
+map_gene_names <- function(rna_matrix, gene_gtf_path, abc_genes_path){
+	gene_ref <- fread(gene_gtf_path, header = FALSE, sep = "\t") %>%
+		setNames(c("chr","source","type","start","end","score","strand","phase","attributes")) %>%
+		dplyr::filter(type == "gene")
+	gene_ref$gene_ref_name <- unlist(lapply(gene_ref$attributes, extract_attributes, "gene_name"))
+	gene_ref$Ensembl_ID <- unlist(lapply(gene_ref$attributes, extract_attributes, "gene_ID"))
+	gene_ref <- dplyr::select(gene_ref, gene_ref_name, Ensembl_ID) %>%
+		mutate(Ensembl_ID = sub("\\.\\d+$", "", Ensembl_ID)) %>% # remove decimal digits 
+		distinct()
+	
+	abc_genes <- fread(abc_genes_path, col.names = c("chr", "start", "end", "name", "score", "strand", "Ensembl_ID", "gene_type")) %>%
+		dplyr::select(name, Ensembl_ID) %>%
+		rename(abc_name = name) %>%
+		left_join(gene_ref, by = "Ensembl_ID") %>%
+		group_by(Ensembl_ID) %>% # remove cases where multiple genes map to one ensembl ID
+		filter(n() == 1) %>%
+		ungroup()
+
+	gene_key <- abc_genes$abc_name
+	names(gene_key) <- abc_genes$gene_ref_name
+
+	# remove genes not in our gene universe
+	rna_matrix_filt <- [rownames(rna_matrix) %in% names(gene_key),]
+	rownames(rna_matrix_filt) <- gene_key[rownames(rna_matrix_filt)]
+
+	return(rna_matrix_filt)
+}
 ## -------------------------------------------------------------------------------------------------
 
 # Import parameters from Snakemake
 kendall_pairs_path = snakemake@input$kendall_pairs_path
 atac_matrix_path = snakemake@input$atac_matrix
 rna_matrix_path = snakemake@input$rna_matrix
+gene_gtf_path = snakemake@params$gene_gtf
+abc_genes_path = snakemake@params$abc_genes
 kendall_predictions_path = snakemake@output$kendall_predictions
 umi_count_path = snakemake@output$umi_count
 
@@ -140,6 +180,7 @@ if (file_ext(rna_matrix_path) %in% c("h5ad", "h5")) {
 }
 
 matrix.rna_count = matrix.rna_count[,colnames(matrix.atac)]
+matrix.rna_count = map_gene_names(matrix.rna_count, gene_gtf_path, abc_genes_path)
 
 # write number of UMIs to file
 num_umi = sum(matrix.rna_count)

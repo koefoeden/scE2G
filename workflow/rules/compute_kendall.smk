@@ -19,6 +19,9 @@ rule compute_kendall:
 			),
 		rna_matrix = 
 			lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "rna_matrix_file"]
+	params:
+		gene_gtf = config["gene_annotations"],
+		abc_genes = encode_e2g_config['gene_TSS500']
 	output:
 		kendall_predictions = 
 			os.path.join(
