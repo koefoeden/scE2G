@@ -2,6 +2,8 @@
 ### INPUT
 cell_clusters: "config/config_cell_clusters.tsv"
 model_config: "config/config_models.tsv"
+gene_annotations: "resources/gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz"
+
 
 ### OUTPUT
 results_dir: "results/example_results/"
