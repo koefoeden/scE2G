@@ -107,7 +107,7 @@ rule get_stats_per_model_per_cluster:
 	conda:
 		"../envs/sc_e2g.yml"
 	resources:
-		mem_mb=determine_mem_mb
+		mem_mb=32000
 	output: 
 		stats = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions_threshold{threshold}_stats.tsv")
 	script:

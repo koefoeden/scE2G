@@ -122,7 +122,7 @@ map_gene_names <- function(rna_matrix, gene_gtf_path, abc_genes_path){
 		setNames(c("chr","source","type","start","end","score","strand","phase","attributes")) %>%
 		dplyr::filter(type == "gene")
 	gene_ref$gene_ref_name <- unlist(lapply(gene_ref$attributes, extract_attributes, "gene_name"))
-	gene_ref$Ensembl_ID <- unlist(lapply(gene_ref$attributes, extract_attributes, "gene_ID"))
+	gene_ref$Ensembl_ID <- unlist(lapply(gene_ref$attributes, extract_attributes, "gene_id"))
 	gene_ref <- dplyr::select(gene_ref, gene_ref_name, Ensembl_ID) %>%
 		mutate(Ensembl_ID = sub("\\.\\d+$", "", Ensembl_ID)) %>% # remove decimal digits 
 		distinct()
@@ -139,8 +139,9 @@ map_gene_names <- function(rna_matrix, gene_gtf_path, abc_genes_path){
 	names(gene_key) <- abc_genes$gene_ref_name
 
 	# remove genes not in our gene universe
-	rna_matrix_filt <- [rownames(rna_matrix) %in% names(gene_key),]
-	rownames(rna_matrix_filt) <- gene_key[rownames(rna_matrix_filt)]
+	row_sub <- intersect(rownames(rna_matrix), names(gene_key)) # gene ref names
+	rna_matrix_filt <- rna_matrix[row_sub,] # still gene ref names
+	rownames(rna_matrix_filt) <- gene_key[row_sub] # converted to abc names
 
 	return(rna_matrix_filt)
 }
