@@ -5,7 +5,7 @@ rule overlap_features_crispr_apply:
 		prediction_file = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions.tsv.gz"),
 		crispr = config['crispr_dataset'],
 		feature_table_file = os.path.join(RESULTS_DIR, "{cluster}", "feature_table.tsv"),
-		tss = encode_e2g_config['gene_TSS500']
+		tss = config['gene_TSS500']
 	params:
 		fill_value_script = os.path.join(SCRIPTS_DIR, "model_application", "get_fill_values.R")
 	output: 

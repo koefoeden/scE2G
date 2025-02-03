@@ -100,6 +100,14 @@ def get_chr_sizes(encode_re2g_dir):
 	chr_sizes = os.path.join(encode_re2g_dir, e2g_config["chr_sizes"])
 	return chr_sizes
 
+def get_TSS_ref_file(encode_re2g_dir):
+	e2g_config_file = os.path.join(encode_re2g_dir, "config/config.yaml")
+	with open(e2g_config_file, 'r') as stream:
+		e2g_config = yaml.safe_load(stream)
+	
+	chr_sizes = os.path.join(encode_re2g_dir, e2g_config["gene_TSS500"])
+	return chr_sizes
+
 
 # decide whether ARC-E2G should use "ABC.Score" or "powerlaw.Score"
 def get_abc_score_col(cluster):

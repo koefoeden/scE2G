@@ -116,8 +116,8 @@ extract_attributes <- function(gtf_attributes, att_of_interest){
     return(NA)}
 }
 
-# map gene names from RNA count matrix to gene reference used by scE2G via Ensembl ID
-map_gene_names <- function(rna_matrix, gene_gtf_path, abc_genes_path){
+# map gene names from RNA matrix and expression metrics to gene reference used by scE2G via Ensembl ID
+map_gene_names <- function(rna_matrix, df_exp, gene_gtf_path, abc_genes_path){
 	gene_ref <- fread(gene_gtf_path, header = FALSE, sep = "\t") %>%
 		setNames(c("chr","source","type","start","end","score","strand","phase","attributes")) %>%
 		dplyr::filter(type == "gene")
@@ -138,12 +138,16 @@ map_gene_names <- function(rna_matrix, gene_gtf_path, abc_genes_path){
 	gene_key <- abc_genes$abc_name
 	names(gene_key) <- abc_genes$gene_ref_name
 
-	# remove genes not in our gene universe
+	# remove genes not in our gene universe	
 	row_sub <- intersect(rownames(rna_matrix), names(gene_key)) # gene ref names
 	rna_matrix_filt <- rna_matrix[row_sub,] # still gene ref names
 	rownames(rna_matrix_filt) <- gene_key[row_sub] # converted to abc names
 
-	return(rna_matrix_filt)
+	# do the same for expression df
+	df_exp_filt <- df_exp[row_sub,]
+	rownames(df_exp_filt) <- gene_key[row_sub]
+
+	return(list(rna_matrix_filt, df_exp_filt))
 }
 ## -------------------------------------------------------------------------------------------------
 
@@ -181,28 +185,33 @@ if (file_ext(rna_matrix_path) %in% c("h5ad", "h5")) {
 }
 
 matrix.rna_count = matrix.rna_count[,colnames(matrix.atac)]
-matrix.rna_count = map_gene_names(matrix.rna_count, gene_gtf_path, abc_genes_path)
-
-# write number of UMIs to file
+# write number of UMIs to file - total before gene filtering as this is more of a QC metric
 num_umi = sum(matrix.rna_count)
 write(num_umi, file = umi_count_path)
 
-# Normalize scRNA matrix
+# Normalize scRNA matrix 
 matrix.rna = NormalizeData(matrix.rna_count)
-
-# Compute Kendall correlation
-pairs.E2G = kendall_mutliple_genes(pairs.E2G,
-                                   matrix.rna,
-                                   matrix.atac,
-                                   colname.gene_name = "TargetGene",
-                                   colname.enhancer_name = "PeakName",
-                                   colname.output = "Kendall")
 
 # Compute gene expression measurements
 df.exp_inf = data.frame(mean_log_normalized_rna = rowMeans(matrix.rna),
                         RnaDetectedPercent = rowSums(matrix.rna_count > 0) / ncol(matrix.rna_count),
                         RnaPseudobulkTPM =  rowSums(matrix.rna_count) / sum(matrix.rna_count)*10^6,
                         row.names = rownames(matrix.rna_count))
+
+# subset (normalized) RNA matrix and map names to ABC gene reference; also subset the gene expression measurements
+gene_filtered_out = map_gene_names(matrix.rna, df.exp_inf, gene_gtf_path, abc_genes_path)
+matrix.rna_filt <- gene_filtered_out[[1]]
+df.exp_filt <-  gene_filtered_out[[2]]
+
+# Compute Kendall correlation
+pairs.E2G = kendall_mutliple_genes(pairs.E2G,
+                                   matrix.rna_filt,
+                                   matrix.atac,
+                                   colname.gene_name = "TargetGene",
+                                   colname.enhancer_name = "PeakName",
+                                   colname.output = "Kendall")
+
+# add gene expression metrics to E2G pairs
 mcols(pairs.E2G)[,c("mean_log_normalized_rna",
                     "RnaDetectedPercent",
                     "RnaPseudobulkTPM")] = 

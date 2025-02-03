@@ -43,7 +43,8 @@ make_biosample_config(
 
 ## Import ENCODE_rE2G pipeline as a reusable module 
 encode_e2g_config = get_e2g_config(config, config["encode_re2g_dir"])
-config["crispr_dataset"] = get_crispr_file( config["encode_re2g_dir"])
+config["crispr_dataset"] = get_crispr_file(config["encode_re2g_dir"])
+config["gene_TSS500"] = get_TSS_ref_file(config["encode_re2g_dir"])
 
 module encode_e2g:
 	snakefile:
