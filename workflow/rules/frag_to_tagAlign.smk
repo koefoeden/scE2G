@@ -74,7 +74,7 @@ rule frag_to_bigWig:
 		bigWig_file = os.path.join(IGV_DIR, "{cluster}", "ATAC.bw"),
 		bedGraph_file = temp(os.path.join(IGV_DIR, "{cluster}", "ATAC.bg"))
 	resources:
-		mem_mb=determine_mem_mb,
+		mem_mb=64000,
 		runtime_hr=24
 	threads: 16
 	conda: 
@@ -98,7 +98,7 @@ rule frag_to_norm_bigWig:
 		bigWig_file = os.path.join(IGV_DIR, "{cluster}", "ATAC_norm.bw"),
 		bedGraph_file = temp(os.path.join(IGV_DIR, "{cluster}", "ATAC_norm.bg"))
 	resources:
-		mem_mb=determine_mem_mb,
+		mem_mb=64000, #determine_mem_mb,
 		runtime_hr=24
 	threads: 16
 	conda: 
