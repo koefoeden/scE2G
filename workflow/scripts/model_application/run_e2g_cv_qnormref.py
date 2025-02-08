@@ -140,3 +140,24 @@ def main(
 if __name__ == "__main__":
 	main()
 
+# python workflow/scripts/model_application/run_e2g_cv_qnormref.py \
+# 	--predictions results/2025_0206_new_gene_universe/K562_Xu_pl/genomewide_features.tsv.gz \
+# 	--feature_table_file models/multiome_powerlaw_v3/feature_table.tsv \
+# 	--trained_model models/multiome_powerlaw_v3/model.pkl \
+# 	--model_dir models/multiome_powerlaw_v3 \
+# 	--epsilon 0.01 \
+# 	--tpm_threshold 1 \
+# 	--n_scores 10000 \
+# 	--output_file_pred results/2025_0206_new_gene_universe/K562_Xu_pl/multiome_powerlaw_v3/genomewide_predictions.tsv.gz \
+# 	--output_file_qnorm models/multiome_powerlaw_v3/qnorm_reference.tsv.gz
+
+# python workflow/scripts/model_application/run_e2g_cv_qnormref.py \
+# 	--predictions results/2025_0206_new_gene_universe/K562_Xu_pl/genomewide_features.tsv.gz \
+# 	--feature_table_file models/scATAC_powerlaw_v3/feature_table.tsv \
+# 	--trained_model models/scATAC_powerlaw_v3/model.pkl \
+# 	--model_dir models/scATAC_powerlaw_v3 \
+# 	--epsilon 0.01 \
+# 	--tpm_threshold 0 \
+# 	--n_scores 10000 \
+# 	--output_file_pred results/2025_0206_new_gene_universe/K562_Xu_pl/scATAC_powerlaw_v3/genomewide_predictions.tsv.gz \
+# 	--output_file_qnorm models/scATAC_powerlaw_v3/qnorm_reference.tsv.gz
