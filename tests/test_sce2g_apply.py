@@ -31,7 +31,7 @@ EXPECTED_OUTPUT_DIR = f"tests/expected_output/{CONFIG['TEST_CONFIG_NAME']}"
 # THRESHOLDED_PRED_FILE_PATTERN = (
 #     "K562_chr22_cluster1/multiome_powerlaw_v2/encode_e2g_predictions_threshold*[0-9].tsv.gz"
 # )
-THRESHOLDED_PRED_FILE = "multiome_powerlaw_v2/encode_e2g_predictions_threshold0.164.tsv.gz"
+THRESHOLDED_PRED_FILE = "multiome_powerlaw_v3/encode_e2g_predictions_threshold0.149.tsv.gz"
 
 class scE2GTest(unittest.TestCase):
     def compare_prediction_file(self, biosample: str, pred_file) -> None:
@@ -75,7 +75,7 @@ class scE2GTest(unittest.TestCase):
         time_taken = time.time() - start
 
         #biosample_names = get_biosample_names(CONFIG["cell_clusters"])
-        biosample_names = ["K562_chr22_cluster1"]
+        biosample_names = ["K562_cluster1_chr22p"]
         for biosample in biosample_names:
             self.compare_prediction_file(biosample, THRESHOLDED_PRED_FILE)
             #self.compare_thresholded_prediction_file(biosample)
@@ -83,11 +83,11 @@ class scE2GTest(unittest.TestCase):
         # Make sure the test doesn't take too long
         # May need to adjust as more biosamples are added, but we should keep
         # tests quick, so don't run rE2G on all chromosomes
-        max_time = 60 * 30  # 20 min
+        max_time = 60 * 30  # 30 min
         self.assertLessEqual(
             time_taken,
             max_time,
-            msg=f"Running scE2G took too long: {int(time_taken)} seconds",
+            msg=f"Running scE2G took too long: {int(time_taken/60)} minutes",
         )
 
     def test_sce2g_apply(self) -> None:
