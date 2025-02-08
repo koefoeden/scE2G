@@ -44,19 +44,17 @@ make_biosample_config(
 	RESULTS_DIR
 )
 
-
 ## Import ENCODE_rE2G pipeline as a reusable module 
 module encode_e2g:
 	snakefile:
 		os.path.join(config["encode_re2g_dir"], "workflow", "Snakefile_training")
 	config: get_e2g_training_config(config, config["encode_re2g_dir"])
 encode_e2g_config = get_e2g_training_config(config, config["encode_re2g_dir"])
-config["crispr_dataset"] = get_crispr_file(config["encode_re2g_dir"])
-config["gene_TSS500"] = get_TSS_ref_file(config["encode_re2g_dir"])
+
+config = update_scE2G_config(config, encode_e2g_config, config["encode_re2g_dir"])
 
 ## Include Snakemake rules from ENCODE_rE2G
 use rule * from encode_e2g exclude format_external_features_config, all
-
 
 ## Include additional Snakemake rules
 include: os.path.join("rules", "frag_to_tagAlign.smk")

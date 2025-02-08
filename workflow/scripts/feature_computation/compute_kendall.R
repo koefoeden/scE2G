@@ -131,6 +131,7 @@ map_gene_names <- function(rna_matrix, df_exp, gene_gtf_path, abc_genes_path){
 		dplyr::select(name, Ensembl_ID) %>%
 		rename(abc_name = name) %>%
 		left_join(gene_ref, by = "Ensembl_ID") %>%
+    filter(!is.na(gene_ref_name)) %>%
 		group_by(Ensembl_ID) %>% # remove cases where multiple genes map to one ensembl ID
 		filter(n() == 1) %>%
 		ungroup()
