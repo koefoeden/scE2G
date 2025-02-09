@@ -38,7 +38,7 @@ rule process_fragment_file:
 	input:
 		frag_file = lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "atac_frag_file"]
 	params:
-		chrSizes = encode_e2g_config["chr_sizes"]
+		chrSizes = config["chr_sizes"]
 	output:
 		fragment_count = temp(os.path.join(RESULTS_DIR, "{cluster}", "fragment_count.txt")),
 		cell_count = temp(os.path.join(RESULTS_DIR, "{cluster}", "cell_count.txt")),
@@ -69,7 +69,7 @@ rule frag_to_bigWig:
 	input:
 		frag_file = os.path.join(RESULTS_DIR, "{cluster}", "fragments_filtered.tsv.gz")
 	params:
-		chrSizes = encode_e2g_config["chr_sizes"]
+		chrSizes = config["chr_sizes"]
 	output:
 		bigWig_file = os.path.join(IGV_DIR, "{cluster}", "ATAC.bw"),
 		bedGraph_file = temp(os.path.join(IGV_DIR, "{cluster}", "ATAC.bg"))
@@ -93,7 +93,7 @@ rule frag_to_norm_bigWig:
 		frag_file = os.path.join(RESULTS_DIR, "{cluster}", "fragments_filtered.tsv.gz"),
 		fragment_count = os.path.join(RESULTS_DIR, "{cluster}", "fragment_count.txt")
 	params:
-		chrSizes = encode_e2g_config["chr_sizes"]
+		chrSizes = config["chr_sizes"]
 	output:
 		bigWig_file = os.path.join(IGV_DIR, "{cluster}", "ATAC_norm.bw"),
 		bedGraph_file = temp(os.path.join(IGV_DIR, "{cluster}", "ATAC_norm.bg"))
