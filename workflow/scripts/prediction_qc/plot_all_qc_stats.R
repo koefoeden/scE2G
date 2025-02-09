@@ -13,7 +13,7 @@ assign_model_colors <- function(model_names) {
   predefined_colors <- c(
     "multiome_powerlaw_v2" = "#792374",
     "scATAC_powerlaw_v2" = "#006479",
-    "multiome_megamap_v2" = "#00488d"
+    "multiome_megamap_v2" = "#00488d",
 	"multiome_powerlaw_v3" = "#792374",
     "scATAC_powerlaw_v3" = "#006479",
     "multiome_megamap_v3" = "#00488d"
