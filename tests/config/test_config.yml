@@ -1,5 +1,5 @@
 ### TESTING ONLY
-TEST_CONFIG_NAME: "powerlaw_v2_models"
+TEST_CONFIG_NAME: "powerlaw_v3_models"
 
 ### INPUT
 cell_clusters: "tests/config/test_config_cell_clusters.tsv"
@@ -8,6 +8,12 @@ make_IGV_tracks: False # create ATAC bw and prediction bedpe files?
 
 ### OUTPUT
 results_dir: "tests/test_output/powerlaw_v2_models/"
+
+### REFERENCE
+gene_annotations: "resources/genome_annotations/gencode.v43.chr_patch_hapl_scaff.annotation.gtf.gz" # compatible with RNA matrix
+gene_TSS500: "resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.TSS500bp.bed" # gene list with promoter bounds
+genes: "resources/genome_annotations/CollapsedGeneBounds.hg38.intGENCODEv43.bed" # gene list with gene body bounds 
+crispr_dataset: "resources/EPCrisprBenchmark_ensemble_data_GRCh38.intGENCODEv43.tsv.gz" # crispr training data
 
 
 ### PARAMS

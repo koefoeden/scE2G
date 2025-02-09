@@ -50,7 +50,7 @@ get_stats_from_pred <- function(pred_full, pred_thresholded, score_column) {
 ##### RUN
 
 pred_full <- fread(snakemake@input$pred_full)
-pred_thresholded <- fread(snakemake@input$pred_thresholded)
+pred_thresholded <- fread(snakemake@input$pred_thresholded) %>% dplyr::filter(class != "promoter")
 score_column <- snakemake@params$score_column
 out_file <- snakemake@output$stats
 
