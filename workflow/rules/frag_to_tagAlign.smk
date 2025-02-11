@@ -107,7 +107,7 @@ rule frag_to_norm_bigWig:
 		"""
 			LC_ALL=C
 			frag_count=$(<{input.fragment_count})
-			scale_factor=$(echo "1000000 / $frag_count" | bc -l)
+			scale_factor=$(awk "BEGIN {{print 1000000 / $frag_count}}")
 
 			zcat {input.frag_file} | \
 				bedtools genomecov -bg -i stdin -g {params.chrSizes} -scale $scale_factor| \
