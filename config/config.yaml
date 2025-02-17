@@ -1,12 +1,12 @@
 
 ### INPUT
-cell_clusters: "/maps/projects/cbmr_shared/people/tqb695/GDPR/_targets/objects/scE2G_cfg_clusters_file.sub1.full.EpiFitBrain.tsv"
+cell_clusters: "/maps/projects/cbmr_shared/people/tqb695/GDPR/_targets/objects/scE2G_cfg_clusters_file.sub3.full.wtc11.tsv"
 benchmark_performance: False # only set to True if all clusters are K562
-make_IGV_tracks: FALSE # create ATAC bw and prediction bedpe files?
+make_IGV_tracks: TRUE # create ATAC bw and prediction bedpe files?
 
 ### OUTPUT
-results_dir: "results/EpiFitBrain/"
-IGV_dir: "results/EpiFitBrain/"
+results_dir: "results/wtc11/"
+IGV_dir: "results/wtc11/"
 
 
 ### REFERENCE FILES
