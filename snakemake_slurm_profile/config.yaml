@@ -1,0 +1,11 @@
+jobs: 32
+slurm: true
+use-envmodules: true
+latency-wait: 60
+rerun-incomplete: True
+
+default-resources:
+  - "slurm_partition=standardqueue"
+  - "mem_mb_per_cpu=15948"
+  - "runtime=3600"
+  - "slurm_account=cbmr"
