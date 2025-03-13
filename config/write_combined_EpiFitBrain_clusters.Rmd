@@ -1,0 +1,21 @@
+```{r}
+tar_config_set(store="/maps/projects/cbmr_shared/people/tqb695/GDPR/_targets")
+combined_tibble <- list(d5_wtc11= tar_read(scE2G_cfg_clusters_file.subAll.real.EpiFitBrain) %>% read_tsv(),
+     d5 = tar_read(scE2G_cfg_clusters_file.subAll.real.d5) %>% read_tsv(),
+     wtc11 = tar_read(scE2G_cfg_clusters_file.subAll.real.wtc11) %>% read_tsv()) %>% bind_rows(.id="project") %>%  
+  unite(col = cluster, project, cluster, sep="_")
+combined_tibble %>%  write_tsv("combined_EpiFitBrain_clusters.tsv")
+combined_tibble
+```
+
+# with own peak calling
+```{r}
+tar_config_set(store="/maps/projects/cbmr_shared/people/tqb695/GDPR/_targets")
+combined_tibble <- list(d5_wtc11= tar_read(scE2G_cfg_clusters_w_peaks_file.subAll.real.EpiFitBrain) %>% read_tsv(),
+     d5 = tar_read(scE2G_cfg_clusters_w_peaks_file.subAll.real.d5) %>% read_tsv(),
+     wtc11 = tar_read(scE2G_cfg_clusters_w_peaks_file.subAll.real.wtc11) %>% read_tsv()) %>% bind_rows(.id="project") %>%  
+  unite(col = cluster, project, cluster, sep="_")
+combined_tibble %>% write_tsv("combined_EpiFitBrain_clusters_w_own_peaks.tsv")
+combined_tibble
+```
+
