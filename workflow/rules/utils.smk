@@ -1,4 +1,4 @@
-MAX_MEM_MB = 250 * 1000  # 250GB
+MAX_MEM_MB = 1600 * 1000  # 1000GB
 
 ## Update paths in the config obj to absolute path
 def make_paths_absolute(obj, base_path):
