@@ -95,8 +95,9 @@ output_files.append(all_qc)
 
 if config["make_IGV_tracks"]:
 	output_files.extend(bedpe_files)
-	output_files.extend(atac_bw)
-	output_files.extend(atac_bw_norm)
+	# below disabled because we already have from pipeline.
+	# output_files.extend(atac_bw)
+	# output_files.extend(atac_bw_norm)
 
 if config["benchmark_performance"]:
  	output_files.append(model_perf)
