@@ -15,7 +15,7 @@ rule frag_to_tagAlign:
 	threads: 8
 	resources:
 		mem_mb=determine_mem_mb,
-		runtime=720*2,
+		runtime_hr=72,
 		temp_dir = 
 			os.path.join(
 				RESULTS_DIR,
@@ -46,7 +46,7 @@ rule process_fragment_file:
 	threads: 8
 	resources:
 		mem_mb=determine_mem_mb,
-		runtime=720*2,
+		runtime_hr=72,
 		temp_dir = 
 			os.path.join(
 				RESULTS_DIR,
