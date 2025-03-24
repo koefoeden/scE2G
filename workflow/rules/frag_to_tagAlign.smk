@@ -1,7 +1,7 @@
 ## Convert fragment file to tagAlign file
 rule frag_to_tagAlign:
 	input:
-		frag_file = os.path.join(RESULTS_DIR, "{cluster}", "fragments_filtered.tsv.gz")
+		frag_file = lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "atac_frag_file"]
 	output:
 		tagAlign_sort_file = 
 			os.path.join(
