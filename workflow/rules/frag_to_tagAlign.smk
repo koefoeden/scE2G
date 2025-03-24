@@ -23,10 +23,12 @@ rule frag_to_tagAlign:
 		)
 	shell:
 		"""
+		export BUFFER_SIZE=$(awk -v mem_mb={resources.mem_mb} -v threads={threads} 'BEGIN {{ result = mem_mb/threads/2; print int(result) }}')
+		
 		# Make, sort and compress tagAlign file from fragment file
 		LC_ALL=C zcat {input.frag_file} | \
 		awk -v OFS='\t' '{{mid=int(($2+$3)/2); print $1,$2,mid,"N",1000,"+"; print $1,mid+1,$3,"N",1000,"-"}}' | \
-		sort -k 1,1V -k 2,2n -k3,3n --parallel {threads} -T {resources.temp_dir} | \
+		sort -k 1,1V -k 2,2n -k3,3n --parallel {threads} -T {resources.temp_dir} -S${{BUFFER_SIZE}}M | \
 		bgzip -c > {output.tagAlign_sort_file}  
 
 		# Index the tagAlign file
