@@ -31,7 +31,9 @@ rule compute_kendall:
 				"Pairs.Kendall.tsv.gz"),
 		umi_count = temp(os.path.join(RESULTS_DIR, "{cluster}", "umi_count.txt")) 
 	resources: 
-		mem_mb=partial(determine_mem_mb*8, min_gb=63),
+		mem_mb = lambda *args, **kwargs: (
+        determine_mem_mb(*args, min_gb=63, **kwargs) * 8
+    ),
 		runtime=lambda wildcards, attempt: 5*24*60
 	conda:
 		"../envs/sc_e2g.yml"
