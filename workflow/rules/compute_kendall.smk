@@ -31,9 +31,7 @@ rule compute_kendall:
 				"Pairs.Kendall.tsv.gz"),
 		umi_count = temp(os.path.join(RESULTS_DIR, "{cluster}", "umi_count.txt")) 
 	resources: 
-		mem_mb = lambda *args, **kwargs: (
-        determine_mem_mb(*args, min_gb=63, **kwargs) * 8
-    ),
+    mem_mb=partial(determine_mem_mb, scaler=32, min_gb=63) # changed default scaler from 4 to 32, ie. 8 x more memory, because of SLURM OOM-event.
 		runtime=lambda wildcards, attempt: 5*24*60
 	conda:
 		"../envs/sc_e2g.yml"
