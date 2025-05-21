@@ -107,6 +107,49 @@ kendall_mutliple_genes = function(bed.E2G,
   return(bed.E2G.output)
 }
 
+# only really change (besides formatting) is chunking of genes and parallization using bioCparallel
+kendall_multiple_genes_parallel = function(bed.E2G,data.RNA, data.ATAC, colname.gene_name, colname.enhancer_name,colname.output, n_workers = NULL) {
+
+    # Filter E2G pairs based on presence in RNA and ATAC data
+    present_genes <- GenomicRanges::mcols(bed.E2G)[, colname.gene_name] %in% rownames(data.RNA)
+    present_peaks <- GenomicRanges::mcols(bed.E2G)[, colname.enhancer_name] %in% rownames(data.ATAC)
+    bed.E2G.filter <- bed.E2G[present_genes & present_peaks]
+
+    # Compute Kendall correlation for each gene
+    genes <- bed.E2G.filter %>% mcols() %>% .[, colname.gene_name] %>% unique()
+    n_workers <- coalesce(n_workers, get_cores())
+    chunked_genes <- split(genes, cut(seq_along(genes), n_workers))
+
+    parallel_param <- BiocParallel::MulticoreParam(workers = n_workers, stop.on.error = FALSE)
+
+    bed.E2G.output <- BiocParallel::bplapply(chunked_genes, function(gene_names) {
+        
+        partial_results <- gene_names %>% map(\(gene.name) {
+
+        # Filter RNA matrix
+        RNA_matrix_filtered <- data.RNA[gene.name, ] %>% as.numeric()
+
+        # Filter ATAC matrix
+        gene_idxs <- bed.E2G.filter %>% GenomicRanges::mcols() %>% .[, colname.gene_name] == gene.name
+        E2G_pairs_filtered_GRanges <- bed.E2G.filter[gene_idxs]
+        peak_names <- E2G_pairs_filtered_GRanges %>% mcols() %>% .[, colname.enhancer_name]
+        ATAC_matrix_filtered <- data.ATAC[peak_names, , drop = F] %>%t()
+
+        # run kendall
+        kendall_results <- kendall_one_gene(RNA_matrix_filtered,ATAC_matrix_filtered)
+        
+        # attach
+        GenomicRanges::mcols(E2G_pairs_filtered_GRanges)[, colname.output] =kendall_results
+        return(E2G_pairs_filtered_GRanges)
+    })
+
+    return(purrr::reduce(partial_results,  `c`))
+    }, BPPARAM = parallel_param)
+    
+    return(purrr::reduce(bed.E2G.output, `c`))
+}
+
+
 # helper function to parse GTF
 extract_attributes <- function(gtf_attributes, att_of_interest){
   att <- unlist(strsplit(gtf_attributes, " "))
@@ -205,7 +248,7 @@ matrix.rna_filt <- gene_filtered_out[[1]]
 df.exp_filt <-  gene_filtered_out[[2]]
 
 # Compute Kendall correlation
-pairs.E2G = kendall_mutliple_genes(pairs.E2G,
+pairs.E2G = kendall_mutliple_genes_parallel(pairs.E2G,
                                    matrix.rna_filt,
                                    matrix.atac,
                                    colname.gene_name = "TargetGene",
