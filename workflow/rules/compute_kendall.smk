@@ -31,6 +31,7 @@ rule compute_kendall:
 				"Pairs.Kendall.tsv.gz"),
 		umi_count = temp(os.path.join(RESULTS_DIR, "{cluster}", "umi_count.txt")) 
 	resources:
+		cores=120,
 		mem_mb=partial(determine_mem_mb, scaler=32, min_gb=63),
 		runtime=lambda wildcards, attempt: 5*24*60
 	conda:

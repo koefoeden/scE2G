@@ -108,7 +108,7 @@ kendall_mutliple_genes = function(bed.E2G,
 }
 
 # only really change (besides formatting) is chunking of genes and parallization using bioCparallel
-kendall_multiple_genes_parallel = function(bed.E2G,data.RNA, data.ATAC, colname.gene_name, colname.enhancer_name,colname.output, n_workers = NULL) {
+kendall_multiple_genes_parallel = function(bed.E2G,data.RNA, data.ATAC, colname.gene_name, colname.enhancer_name,colname.output, n_workers = 120) {
 
     # Filter E2G pairs based on presence in RNA and ATAC data
     present_genes <- GenomicRanges::mcols(bed.E2G)[, colname.gene_name] %in% rownames(data.RNA)
@@ -117,7 +117,6 @@ kendall_multiple_genes_parallel = function(bed.E2G,data.RNA, data.ATAC, colname.
 
     # Compute Kendall correlation for each gene
     genes <- bed.E2G.filter %>% mcols() %>% .[, colname.gene_name] %>% unique()
-    n_workers <- coalesce(n_workers, get_cores())
     chunked_genes <- split(genes, cut(seq_along(genes), n_workers))
 
     parallel_param <- BiocParallel::MulticoreParam(workers = n_workers, stop.on.error = FALSE)
