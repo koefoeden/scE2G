@@ -247,7 +247,7 @@ matrix.rna_filt <- gene_filtered_out[[1]]
 df.exp_filt <-  gene_filtered_out[[2]]
 
 # Compute Kendall correlation
-pairs.E2G = kendall_mutliple_genes_parallel(pairs.E2G,
+pairs.E2G = kendall_multiple_genes_parallel(pairs.E2G,
                                    matrix.rna_filt,
                                    matrix.atac,
                                    colname.gene_name = "TargetGene",
