@@ -44,5 +44,5 @@ snakemake \
   cell_clusters="$OUTPUT_CELL_CLUSTERS" \
   results_dir=${RESULT_NAME} \
   IGV_dir=${RESULT_NAME} \
-  gene_annotations="resources/genome_annotations/gencode.v32.annotation.gtf.gz" \
+  gene_annotations="/maps/projects/cbmr_shared/people/wkq953/non-GDPR/segment/pipeline/resources/gencode.v32.annotation.gtf.gz" \
   make_IGV_tracks=True

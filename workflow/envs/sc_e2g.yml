@@ -33,5 +33,6 @@ dependencies:
   - seaborn
   - matplotlib
   - bioconductor-genomicranges
+  - bioconductor-BiocParallel
   - bioconductor-genomation
   - r-codetools
