@@ -54,7 +54,7 @@ rule run_e2g_qnorm:
 	conda:
 		"../envs/sc_e2g.yml"
 	resources:
-		mem_mb=determine_mem_mb
+		mem_mb=encode_e2g.ABC.determine_mem_mb
 	output: 
 		prediction_file = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions.tsv.gz")
 	shell: 
@@ -69,29 +69,37 @@ rule run_e2g_qnorm:
 			--crispr_benchmarking {params.crispr_benchmarking} \
 			--output_file {output.prediction_file}
 		"""
+def get_gex_file(wildcards):
+	with checkpoints.features_required.get(sample=wildcards.cluster).output.to_generate.open() as f:
+		val = f.read().strip()
+		if val == "Kendall" or val == "ARC":
+			return os.path.join(RESULTS_DIR, wildcards.cluster, "Kendall", "gene_expression_metrics.tsv.gz")
+		else:
+			return RESULTS_DIR
 
 rule element_and_gene_summaries:
 	input:
 		abc_gene_list = os.path.join(RESULTS_DIR, "{cluster}", "Neighborhoods", "GeneList.txt"),
 		abc_element_list = os.path.join(RESULTS_DIR, "{cluster}", "Neighborhoods", "EnhancerList.txt"),
-		prediction_file = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions.tsv.gz")
+		prediction_file = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions.tsv.gz"),
+		gene_expr_file = get_gex_file
 	params:
 		tpm_threshold = lambda wildcards: encode_e2g.get_tpm_threshold(wildcards.cluster, wildcards.model_name, BIOSAMPLE_DF)
 	conda:
 		"../envs/sc_e2g.yml"
 	resources:
-		mem_mb=determine_mem_mb
+		mem_mb=encode_e2g.ABC.determine_mem_mb
 	output: 
 		gene_list = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "scE2G_gene_list.tsv.gz"),
 		element_list = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "scE2G_element_list.tsv.gz")
 	script:
 		"../scripts/prediction_qc/generate_element_gene_lists.R"
 
-def get_num_UMI_file(wildcards):
+def get_count_file(wildcards, metric):
 	with checkpoints.features_required.get(sample=wildcards.cluster).output.to_generate.open() as f:
 		val = f.read().strip()
 		if val == "Kendall" or val == "ARC":
-			return os.path.join(RESULTS_DIR, wildcards.cluster, "umi_count.txt")
+			return os.path.join(RESULTS_DIR, wildcards.cluster, f"{metric}.txt")
 		else:
 			return RESULTS_DIR
 
@@ -100,8 +108,8 @@ rule get_stats_per_model_per_cluster:
 		pred_full = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions.tsv.gz"),
 		pred_thresholded = os.path.join(RESULTS_DIR, "{cluster}", "{model_name}", "encode_e2g_predictions_threshold{threshold}.tsv.gz"),
 		fragment_count = os.path.join(RESULTS_DIR, "{cluster}", "fragment_count.txt"),
-		cell_count = os.path.join(RESULTS_DIR, "{cluster}", "cell_count.txt"),
-		umi_count = get_num_UMI_file
+		cell_count = lambda wildcards: get_count_file(wildcards, "cell_count"),
+		umi_count = lambda wildcards: get_count_file(wildcards, "umi_count")
 	params:
 		score_column = "E2G.Score.qnorm"
 	conda:
@@ -122,7 +130,7 @@ rule plot_stats:
 	conda:
 		"../envs/sc_e2g.yml"
 	resources:
-		mem_mb=determine_mem_mb
+		mem_mb=encode_e2g.ABC.determine_mem_mb
 	output: 
 		all_stats = os.path.join(RESULTS_DIR, "qc_plots", "all_qc_stats.tsv"),
 		ds_stats = os.path.join(RESULTS_DIR, "qc_plots", "dataset_metrics.pdf"),
@@ -134,3 +142,20 @@ rule plot_stats:
 	script:
 		"../scripts/prediction_qc/plot_all_qc_stats.R"
 
+
+rule hover_plots:
+	input:
+		qc_stats = os.path.join(RESULTS_DIR, "qc_plots", "all_qc_stats.tsv")
+	params:
+		reference_clusters = config["qc_reference"],
+		results_dir = RESULTS_DIR,
+		code_dir = WORKFLOW_DIR,
+		tab_template = os.path.join(WORKFLOW_DIR, "workflow", "scripts", "prediction_qc", "qc_plot_tab_template.Rmd")
+	conda:
+		"../envs/sc_e2g.yml"
+	resources:
+		mem_mb=encode_e2g.ABC.determine_mem_mb
+	output:
+		plot_html = os.path.join(RESULTS_DIR, "qc_plots", "predictions_qc_report.html")
+	script:
+		os.path.join("{params.code_dir}", "workflow", "scripts", "prediction_qc", "qc_report.Rmd")

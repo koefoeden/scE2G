@@ -18,7 +18,7 @@ rule compute_kendall:
 				"atac_matrix.rds"
 			),
 		rna_matrix = 
-			lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "rna_matrix_file"]
+			lambda wildcards: CELL_CLUSTER_DF.loc[wildcards.cluster, "rna_matrix_file"],
 	params:
 		gene_gtf = config["gene_annotations"],
 		abc_genes = config['gene_TSS500']
@@ -29,9 +29,11 @@ rule compute_kendall:
 				"{cluster}", 
 				"Kendall", 
 				"Pairs.Kendall.tsv.gz"),
-		umi_count = temp(os.path.join(RESULTS_DIR, "{cluster}", "umi_count.txt")) 
+		umi_count = (os.path.join(RESULTS_DIR, "{cluster}", "umi_count.txt")),
+		cell_count = (os.path.join(RESULTS_DIR, "{cluster}", "cell_count.txt")),
+		all_gex = os.path.join(RESULTS_DIR, "{cluster}", "Kendall", "gene_expression_metrics.tsv.gz")
 	resources:
-		mem_mb=partial(determine_mem_mb, scaler=32, min_gb=1900),
+		mem_mb=partial(encode_e2g.ABC.determine_mem_mb, scaler=32, min_gb=1900),
 		runtime=lambda wildcards, attempt: 5*24*60
 	threads: 10
 	conda:

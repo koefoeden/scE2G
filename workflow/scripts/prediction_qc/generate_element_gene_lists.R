@@ -12,7 +12,7 @@ suppressPackageStartupMessages({
 abc_gene_list <- fread(snakemake@input$abc_gene_list, sep = "\t")
 abc_element_list <- fread(snakemake@input$abc_element_list, sep = "\t")
 pred <- fread(snakemake@input$prediction_file)
-cell_type <- snakemake@wildcards$cluster
+this_cluster <- snakemake@wildcards$cluster
 tpm_threshold <- snakemake@params$tpm_threshold
 
 genes_out <- snakemake@output$gene_list
@@ -22,29 +22,36 @@ elements_out <- snakemake@output$element_list
 # isSelfPromoter	CellType	distance	normalizedATAC_prom	ABC.Score	ABC.Score.1	numCandidateEnhGene	numTSSEnhGene	numNearbyEnhancers
 # ubiqExpressed	RNA_meanLogNorm	RNA_pseudobulkTPM	RNA_percentCellsDetected	Kendall	ARC.E2G.Score	E2G.Score	E2G.Score.qnorm	E2G.Score.qnorm.ignoreTPM
 
-
 ## update gene list
 # ABC gene list columns: chr	start	end	name	score	strand	Ensembl_ID	gene_type	symbol	tss	Expression	is_ue	cellType
 # ATAC.tagAlign.sort.gz.readCount	...	PromoterActivityQuantile
 
 gene_columns <- c("normalizedATAC_prom", "ubiqExpressed")
-RNA_columns <- c("RNA_meanLogNorm", "RNA_pseudobulkTPM", "RNA_percentCellsDetected")
-pred_genes <- dplyr::select(pred, TargetGene, TargetGeneEnsembl_ID,any_of(gene_columns), any_of(RNA_columns)) %>%
+
+pred_genes <- dplyr::select(pred, TargetGene, TargetGeneEnsembl_ID, any_of(gene_columns)) %>%
 	distinct() %>%
 	rename(name = TargetGene, Ensembl_ID = TargetGeneEnsembl_ID)
 
 gene_list <- abc_gene_list %>%
-	dplyr::select(-c(Expression, cellType)) %>%
-	rename(removed_by_promoter_activity = is_ue) %>% # refers to promoter activity quantile
-	mutate(cellType = cell_type) %>%
-	left_join(pred_genes, by = c("name", "Ensembl_ID"))
+	dplyr::select(-c(is_ue, Expression, cellType), -contains("RPKM")) %>%
+	mutate(removed_by_promoter_activity = !(name %in% pred_genes$name)) %>% # refers to promoter activity quantile
+	left_join(pred_genes, by = c("name", "Ensembl_ID")) %>% 
+	mutate(CellType = this_cluster)
 
-if ("RNA_pseudobulkTPM" %in% colnames(gene_list)) {
-	gene_list <- mutate(gene_list, removed_by_TPM = (RNA_pseudobulkTPM < tpm_threshold),
-		considered_for_predictions = !removed_by_promoter_activity & !removed_by_TPM)
+if ("RNA_pseudobulkTPM" %in% colnames(pred)) { # we have RNA data
+	RNA_columns <- c("RNA_meanLogNorm", "RNA_pseudobulkTPM", "RNA_percentCellsDetected")
+	gex <- fread(snakemake@input$gene_expr_file) %>%
+		select(name = TargetGene, any_of(RNA_columns))
+
+	gene_list <- left_join(gene_list, gex, by = "name") %>% 
+		mutate(removed_by_TPM = ifelse(is.na(RNA_pseudobulkTPM), FALSE, (RNA_pseudobulkTPM < tpm_threshold)),
+			in_RNA_matrix = !is.na(RNA_pseudobulkTPM),
+			considered_for_predictions = !removed_by_promoter_activity & !removed_by_TPM & in_RNA_matrix)
 } else {
 	gene_list <- mutate(gene_list, considered_for_predictions = !removed_by_promoter_activity)
 }
+
+# NA in TPM means it was not in the RNA matrix
 fwrite(gene_list, genes_out, sep = "\t", col.names = TRUE, row.names = FALSE,, quote = FALSE)
 
 ## update enhancer list
