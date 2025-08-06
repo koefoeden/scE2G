@@ -83,13 +83,12 @@ kendall_one_gene <- function(x, y.matrix) {
 
 
 # Compute Kendall correlation between a mutliple genes and multiple enhancers
-kendall_mutliple_genes = function(bed.E2G,
-                                  data.RNA,
-                                  data.ATAC,
-                                  colname.gene_name = "gene_name",
-                                  colname.enhancer_name = "peak_name",
-                                  colname.output = "Kendall") {
-  
+kendall_mutliple_genes <- function(bed.E2G,
+                                   data.RNA,
+                                   data.ATAC,
+                                   colname.gene_name = "gene_name",
+                                   colname.enhancer_name = "peak_name",
+                                   colname.output = "Kendall") {
   # Filter E2G pairs based on presence in RNA and ATAC data
   bed.E2G.filter <-
     bed.E2G[mcols(bed.E2G)[, colname.gene_name] %in% rownames(data.RNA) &
@@ -189,13 +188,13 @@ map_gene_names <- function(rna_matrix, df_exp, gene_gtf_path, abc_genes_path) {
     filter(n() == 1) %>%
     ungroup()
 
-	gene_key <- abc_genes$abc_name
-	names(gene_key) <- abc_genes$gene_ref_name
+  gene_key <- abc_genes$abc_name
+  names(gene_key) <- abc_genes$gene_ref_name
 
-	# remove genes not in our gene universe	
-	row_sub <- intersect(rownames(rna_matrix), names(gene_key)) # gene ref names
-	rna_matrix_filt <- rna_matrix[row_sub,] # still gene ref names
-	rownames(rna_matrix_filt) <- gene_key[row_sub] # converted to abc names
+  # remove genes not in our gene universe
+  row_sub <- intersect(rownames(rna_matrix), names(gene_key)) # gene ref names
+  rna_matrix_filt <- rna_matrix[row_sub, ] # still gene ref names
+  rownames(rna_matrix_filt) <- gene_key[row_sub] # converted to abc names
 
   # do the same for expression df
   df_exp_filt <- df_exp[row_sub, ]
@@ -206,13 +205,15 @@ map_gene_names <- function(rna_matrix, df_exp, gene_gtf_path, abc_genes_path) {
 ## -------------------------------------------------------------------------------------------------
 
 # Import parameters from Snakemake
-kendall_pairs_path = snakemake@input$kendall_pairs_path
-atac_matrix_path = snakemake@input$atac_matrix
-rna_matrix_path = snakemake@input$rna_matrix
-gene_gtf_path = snakemake@params$gene_gtf
-abc_genes_path = snakemake@params$abc_genes
-kendall_predictions_path = snakemake@output$kendall_predictions
-umi_count_path = snakemake@output$umi_count
+kendall_pairs_path <- snakemake@input$kendall_pairs_path
+atac_matrix_path <- snakemake@input$atac_matrix
+rna_matrix_path <- snakemake@input$rna_matrix
+gene_gtf_path <- snakemake@params$gene_gtf
+abc_genes_path <- snakemake@params$abc_genes
+kendall_predictions_path <- snakemake@output$kendall_predictions
+umi_count_path <- snakemake@output$umi_count
+cell_count_path <- snakemake@output$cell_count
+gex_out_path <- snakemake@output$all_gex
 
 # Load candidate E-G pairs
 pairs.E2G <- readGeneric(kendall_pairs_path,
@@ -240,9 +241,9 @@ if (file_ext(rna_matrix_path) %in% c("h5ad", "h5")) {
   message("Please provide a supported RNA matrix format.")
 }
 
-matrix.rna_count = matrix.rna_count[,colnames(matrix.atac)]
+matrix.rna_count <- matrix.rna_count[, colnames(matrix.atac)]
 # write number of UMIs to file - total before gene filtering as this is more of a QC metric
-num_umi = sum(matrix.rna_count)
+num_umi <- sum(matrix.rna_count)
 write(num_umi, file = umi_count_path)
 
 # Normalize scRNA matrix
@@ -261,26 +262,29 @@ gene_filtered_out <- map_gene_names(matrix.rna, df.exp_inf, gene_gtf_path, abc_g
 matrix.rna_filt <- gene_filtered_out[[1]]
 df.exp_filt <- gene_filtered_out[[2]]
 
-df.exp_filt.to_save <- df.exp_filt %>% 
-  rownames_to_column(var = "TargetGene") %>% 
+df.exp_filt.to_save <- df.exp_filt %>%
+  rownames_to_column(var = "TargetGene") %>%
   select(TargetGene,
     RNA_meanLogNorm = mean_log_normalized_rna,
     RNA_pseudobulkTPM = RnaPseudobulkTPM,
-    RNA_percentCellsDetected = RnaDetectedPercent)
+    RNA_percentCellsDetected = RnaDetectedPercent
+  )
 
-fwrite(df.exp_filt.to_save, 
-       file = gex_out_path,
-       row.names = F,
-       quote = F,
-       sep = "\t")
+fwrite(df.exp_filt.to_save,
+  file = gex_out_path,
+  row.names = F,
+  quote = F,
+  sep = "\t"
+)
 
 # Compute Kendall correlation
-pairs.E2G = kendall_mutliple_genes(pairs.E2G,
-                                   matrix.rna_filt,
-                                   matrix.atac,
-                                   colname.gene_name = "TargetGene",
-                                   colname.enhancer_name = "PeakName",
-                                   colname.output = "Kendall")
+pairs.E2G <- kendall_mutliple_genes(pairs.E2G,
+  matrix.rna_filt,
+  matrix.atac,
+  colname.gene_name = "TargetGene",
+  colname.enhancer_name = "PeakName",
+  colname.output = "Kendall"
+)
 
 # add gene expression metrics to E2G pairs
 mcols(pairs.E2G)[, c(
