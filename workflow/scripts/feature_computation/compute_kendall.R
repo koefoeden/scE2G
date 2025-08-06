@@ -246,6 +246,10 @@ matrix.rna_count <- matrix.rna_count[, colnames(matrix.atac)]
 num_umi <- sum(matrix.rna_count)
 write(num_umi, file = umi_count_path)
 
+n_cells <- ncol(matrix.rna_count)
+write(n_cells, file = cell_count_path)
+
+
 # Normalize scRNA matrix
 matrix.rna <- NormalizeData(matrix.rna_count)
 

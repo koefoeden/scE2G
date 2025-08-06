@@ -13,7 +13,7 @@ make_IGV_tracks: False # create ATAC bw and prediction bedpe files?
 fragments_preprocessed: False
 # set this to True if the RNA matrix contains the exact set of cells as the ATAC fragment file, and False if it contains more cells (default if not specified: True)
 RNA_matrix_filtered: True
-max_memory_allocation_mb: 250000 # for submitted jobs
+max_memory_allocation_mb: 1500000 # for submitted jobs
 
 
 ### REFERENCE FILES

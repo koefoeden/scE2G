@@ -10,7 +10,7 @@ rule save_reference_configs:
         biosample_config = BIOSAMPLE_DF,
         out_dir = os.path.join(RESULTS_DIR, "config"), 
         results_dir = RESULTS_DIR,
-        igv_dir = IGV_DIR
+        IGV_dir = IGV_DIR
     output:
         sce2g_out = os.path.join(RESULTS_DIR, "config", "scE2G_config.yml"),
         e2g_out = os.path.join(RESULTS_DIR, "config", "ENCODE_rE2G_config.yml"),

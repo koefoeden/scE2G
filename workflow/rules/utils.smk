@@ -15,7 +15,7 @@ def make_paths_absolute(obj, base_path):
 			return new_file
 	return obj
 
-def determine_mem_mb(wildcards, input, attempt, scaler=4, min_gb=8):
+def determine_mem_mb(wildcards, input, attempt, scaler=4, min_gb=64):
 	# Memory resource calculator for snakemake rules
 	input_size_mb = input.size_mb
 	if ".gz" in str(input):
