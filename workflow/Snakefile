@@ -102,16 +102,16 @@ model_perf = os.path.join(RESULTS_DIR, "crispr_benchmarking_performance_summary.
 
 
 ## Choose relevant output files
-output_files.extend(sc_e2g_predictions)
-output_files.extend(prediction_stats)
-output_files.append(gene_lists)
-output_files.append(element_lists)
-output_files.append(all_qc)
+output_files.extend(sc_e2g_predictions) # nesessary
+# output_files.extend(prediction_stats) # not necessary
+# output_files.append(all_qc) # not necessary.
+# output_files.append(gene_lists) # not necessary
+# output_files.append(element_lists) # not necessary
 
 if config["make_IGV_tracks"]:
 	output_files.extend(bedpe_files)
-	#output_files.extend(atac_bw) # just output normalize!
-	output_files.extend(atac_bw_norm)
+	# output_files.extend(atac_bw) # speed up
+	# output_files.extend(atac_bw_norm) # speed up
 
 if config["benchmark_performance"]:
  	output_files.append(model_perf)
