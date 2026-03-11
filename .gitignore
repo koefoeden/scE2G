@@ -8,3 +8,5 @@ workflow/scripts/mine/
 *.dot
 *.png
 logs/
+.vscode
+pipelines
