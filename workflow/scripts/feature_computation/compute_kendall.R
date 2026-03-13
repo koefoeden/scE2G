@@ -21,11 +21,8 @@ options(scipen = 999)
 
 ## Define functions --------------------------------------------------------------------------------
 
-# Compute Kendall correlation between a single gene and multiple enhancers
-kendall_one_gene = function(x, y.matrix){
-  # Calculate the difference between concordant and disconcordant pairs from a sorted logical matrix
-  # Refer to step 2 and 3 in Fig. S1 of Sheth, Qiu et al. 2025
-  cppFunction('
+# Compile the Rcpp helper once and reuse it across gene computations.
+COUNT_DIFF_CPP <- '
 NumericVector count_diff(LogicalMatrix y_matrix_sorted) {
     int n = y_matrix_sorted.nrow();
     int m = y_matrix_sorted.ncol();
@@ -48,9 +45,20 @@ NumericVector count_diff(LogicalMatrix y_matrix_sorted) {
         result[j] = static_cast<double>(concordant - disconcordant);
     }
     return result;
+}'
+
+compile_count_diff <- function() {
+  if (!exists("count_diff", mode = "function")) {
+    cppFunction(code = COUNT_DIFF_CPP)
+  }
 }
-')
-  
+
+compile_count_diff()
+
+# Compute Kendall correlation between a single gene and multiple enhancers
+kendall_one_gene = function(x, y.matrix){
+  # Calculate the difference between concordant and disconcordant pairs from a sorted logical matrix
+  # Refer to step 2 and 3 in Fig. S1 of Sheth, Qiu et al. 2025
   # Sort x in decreasing order and accordingly sort y.matrix
   # Step 1 in Fig. S1 of Sheth, Qiu et al. 2025
   ord = order(x, 
@@ -115,12 +123,20 @@ kendall_multiple_genes = function(bed.E2G,
   if (cores > 1) {
     # Start parallel cluster
     cl <- makeCluster(cores)
+    clusterExport(cl, "COUNT_DIFF_CPP", envir = environment())
+    clusterEvalQ(cl, {
+      library(Rcpp)
+      if (!exists("count_diff", mode = "function")) {
+        cppFunction(code = COUNT_DIFF_CPP)
+      }
+      NULL
+    })
     registerDoParallel(cl)
     
     # Compute Kendall correlation for each gene
     bed.E2G.output <- foreach(gene.name = unique(mcols(bed.E2G.filter)[,colname.gene_name]),
                               .combine = 'c',
-                              .packages = c("GenomicRanges", "Matrix", "Rcpp"),
+                              .packages = c("GenomicRanges", "Matrix"),
 			      .export = c("kendall_one_gene")) %dopar% {
                                 # select enhancer-gene pairs for one gene
                                 bed.E2G.tmp <- bed.E2G.filter[mcols(bed.E2G.filter)[,colname.gene_name] == gene.name]
