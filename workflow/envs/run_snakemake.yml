@@ -1,4 +1,4 @@
-name: run_snakemake
+name: run_snakemake_v1.3
 channels:
   - bioconda
   - conda-forge
