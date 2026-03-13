@@ -12,3 +12,4 @@ rerun-incomplete: True
 printshellcmds: True
 scheduler: greedy
 use-conda: True
+singularity-args: "--bind /maps/projects/cbmr_shared/people/tqb695"
