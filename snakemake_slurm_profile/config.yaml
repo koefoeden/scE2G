@@ -1,15 +1,43 @@
+# SLURM submission command template used for each non-local Snakemake job.
+# Snakemake fills in placeholders like {threads}, {resources.*}, {rule}, and {wildcards}.
+# --output controls where SLURM writes the per-job stdout/stderr log file.
 cluster: sbatch --partition={resources.partition} --cpus-per-task={threads} --mem={resources.mem_mb} --job-name=smk-{rule}-{wildcards} --output=logs/%j.out
+
+# Extra arguments passed to singularity/apptainer when containerized rules run.
+# Bind broad storage roots so workflow inputs/outputs are usually visible without
+# having to enumerate individual files or subdirectories in the caller.
+singularity-args: "--bind /maps/projects,/projects,/scratch,/tmp"
+
+# Default resource values used when a rule does not set them explicitly.
 default-resources:
   - partition="standardqueue"
+
+# Number of times to retry a failed job submission or execution.
 restart-times: 0
+
+# Rate limit for submitting jobs to the scheduler.
 max-jobs-per-second: 10
+
+# Rate limit for polling scheduler/job status updates.
 max-status-checks-per-second: 1
+
+# Number of cores available for rules that run locally on the head node.
 local-cores: 1
+
+# Seconds to wait for output files to appear after a job is reported finished.
 latency-wait: 60
+
+# Maximum number of jobs Snakemake may have active at once.
 jobs: 500
+
+# Continue running independent jobs even if some jobs fail.
 keep-going: True
+
+# Re-run jobs whose outputs exist but were left incomplete by an interrupted run.
 rerun-incomplete: True
+
+# Print each shell command before Snakemake executes it.
 printshellcmds: True
+
+# Workflow scheduling strategy; "greedy" is fast and usually fine on clusters.
 scheduler: greedy
-use-conda: True
-singularity-args: "--bind /maps/projects/cbmr_shared/people/tqb695"
